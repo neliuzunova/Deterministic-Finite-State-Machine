@@ -84,16 +84,20 @@ Automat ListOfAutomats::Iteration(Automat * a1)
 Automat ListOfAutomats::Addititon(Automat * a1)
 {
 	Automat a3;
-	a3.SetStartingState(a1->GetStartingState());
 	a3.AddStates(a1->GetStates());
 	a3.AddEdges(a1->GetEdges());
+	a3.SetStartingState(a1->GetStartingState());
 
-	for (auto edge: a1->GetEdges())
+	for (auto& state: a3.GetStatesRef())
 	{
-		//std::swap(edge.GetFromState(), edge.GetToState());
-		State* temp = edge.GetFromState();
-		edge.SetFromState(edge.GetToState()) ;
-		edge.SetToState(temp) ;
+		if (state.GetIsFinal())
+		{
+			state.SetIsFinal(false);
+		}
+		else
+		{
+			state.SetIsFinal(true);
+		}
 	}
 	return a3;
 }

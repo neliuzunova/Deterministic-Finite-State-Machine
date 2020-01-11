@@ -69,7 +69,7 @@ int main() {
 	Automat A5 = LA.Iteration(&A);
 	A5.PrintAutomat();
 
-	Automat A6 = LA.Addititon(&A);
+	Automat A6 = LA.Addititon(&A4);
 	A6.PrintAutomat();
 
 	std::cout << A2.IsEmpty() << std::endl;
