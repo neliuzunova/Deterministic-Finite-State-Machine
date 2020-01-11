@@ -71,27 +71,32 @@ bool IsMember(std::vector<State>& usedStates, State* toState) {
 	return false;
 }
 
-bool DFS(State* state, std::string currentWord, std::string word, std::vector<State>& usedStates) {
-	if ((currentWord == word) && (state->GetIsFinal()))
-	{
-		return true;
-	}
-	usedStates.push_back(*state);
-	bool result = false;
-	for (auto e : *state->GetEdges())
-	{
-		if (!IsMember(usedStates, e->GetToState())) //not used state
-		{
-			result = result || DFS(e->GetToState(), currentWord + e->GetLetter(), word, usedStates);
-		}
-	}
-	return result;
-}
-
 bool Automat::HasWord(std::string word)
 {
-	std::vector<State> usedStates;
-	return DFS(GetStartingState(), "", word, usedStates);
+	State current = *GetStartingState();
+	int counter = 0;
+	int NumberOfTransitions = GetEdges().size();
+
+	while (counter < word.length())
+	{
+		for (int j = 0; j < NumberOfTransitions; j++)
+		{
+			if (word[counter] == GetEdges()[j].GetLetter() && current == *GetEdges()[j].GetFromState())
+			{
+				current = *GetEdges()[j].GetToState();
+				counter++;
+				j = 0;
+			}
+			if (current.GetIsFinal() && counter == word.length())
+				return true;
+			if (j + 1 == NumberOfTransitions)
+				return false;
+		}
+	}
+
+	
+
+	return false;
 }
 
 void Automat::PrintAutomat()

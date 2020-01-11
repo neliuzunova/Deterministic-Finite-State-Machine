@@ -72,7 +72,9 @@ int main() {
 	Automat A6 = LA.Addititon(&A);
 	A6.PrintAutomat();
 
-	std::cout << A2.IsEmpty() << std::endl;;
+	std::cout << A2.IsEmpty() << std::endl;
+		//<< A4.HasWord("ac") << std::endl << A4.HasWord("cc");
+
 	system("pause");
 	return 0;
 }
