@@ -75,6 +75,11 @@ int main() {
 	std::cout << A2.IsEmpty() << std::endl;
 		//<< A4.HasWord("ac") << std::endl << A4.HasWord("cc");
 
+	Automat('f').PrintAutomat();
+	std::cout << std::endl;
+	Automat* A7 = LA.RegToAutomat("(a + b)");
+	A7->PrintAutomat();
+
 	system("pause");
 	return 0;
 }

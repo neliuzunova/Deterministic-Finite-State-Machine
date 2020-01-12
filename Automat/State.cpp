@@ -6,6 +6,7 @@ State::State()
 {
 	m_isStarting = 0;
 	m_isFinal = 0;
+	m_Edges.reserve(1024);
 	m_Edges = std::vector<Edge*>();
 }
 

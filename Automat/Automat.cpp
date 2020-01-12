@@ -10,6 +10,26 @@ Automat::Automat()
 	m_edges.reserve(1024);
 }
 
+Automat::Automat(char letter)
+{
+	//to prevent vector from resizing and invalidating the states
+	m_states.reserve(1024);
+	m_edges.reserve(1024);
+
+	State* s0 = AddState();
+	s0->SetIsStarting(true);
+	s0->SetIsFinal(false);
+	SetStartingState(s0);
+	State* s1 = AddState();
+	s1->SetIsStarting(false);
+	s1->SetIsFinal(true);
+
+	Edge* e1 = AddEdge();
+	e1->SetLetter(letter);
+	e1->SetToState(s1);
+	s0->AddEdge(e1);
+}
+
 State* Automat::GetStartingState() const
 {
 	return m_startingState;
