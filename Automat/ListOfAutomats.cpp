@@ -12,6 +12,13 @@ void ListOfAutomats::AddAutomat(Automat* automat)
 	m_automats.push_back(*automat);
 }
 
+Automat* ListOfAutomats::AddAutomat()
+{
+	Automat newAutomat;
+	m_automats.push_back(newAutomat);
+	return &m_automats.back();
+}
+
 Automat ListOfAutomats::Union(Automat* a1, Automat* a2)
 {
 	Automat a3;
@@ -160,12 +167,38 @@ bool isNotSpecialSymbol(char symbol) {
 		symbol != '.' && symbol != '*' && symbol != '&');
 }
 
+void ListOfAutomats::AppplyFunction( std::stack<Automat*>& automat_stack, std::stack<char>& operations) {
+	char op = operations.top();
+	operations.pop();
+	if (op == '*')
+	{
+		Automat a1 = Iteration(automat_stack.top());
+		automat_stack.pop();
+		Automat* newAutomat = AddAutomat();
+		*newAutomat = a1;
+	}
+	else
+	{
+		Automat* newAutomat2 = AddAutomat();
+		newAutomat2 = automat_stack.top();
+		automat_stack.pop();
+
+		Automat* newAutomat1 = AddAutomat();
+		newAutomat1 = automat_stack.top();
+		automat_stack.pop();
+
+		Automat* newAutomat3 = AddAutomat();
+		*newAutomat3 = applyOp(*newAutomat1, *newAutomat2, op);
+		automat_stack.push(newAutomat3);
+	}
+}
+
 Automat* ListOfAutomats::RegToAutomat(const std::string& reg)
 {
-	std::vector<Automat>* automats = new std::vector<Automat>(); //for every letter
+	std::vector<Automat*> automats; //for every letter
 
 	//to prevent vector from resizing and invalidating the states
-	automats->reserve(1024);
+	automats.reserve(1024);
 
 	for (int i = 0; i < reg.size(); i++) 
 	{
@@ -175,92 +208,56 @@ Automat* ListOfAutomats::RegToAutomat(const std::string& reg)
 		}
 		if (isNotSpecialSymbol(reg[i])) 
 		{
-			automats->push_back(Automat(reg[i]));
+			Automat* newAutomat = AddAutomat();
+			*newAutomat = Automat(reg[i]);
+			automats.push_back(newAutomat);
 		}
 	}
 
-	std::stack<Automat> automat_stack;
+	std::stack<Automat*> automat_stack;
 	std::stack<char> operations;
 	int j = 0;
 
-	for (int i = 0; i < reg.size(); i++) {
-		if (reg[i] == ' ') continue;
-		else if (reg[i] == '(') {
+	for (int i = 0; i < reg.size(); i++) 
+	{
+		if (reg[i] == ' ')
+		{
+			continue;
+		}
+		else if (reg[i] == '(') 
+		{
 			operations.push(reg[i]);
 		} 
-		else if (isNotSpecialSymbol(reg[i])) {
-			automat_stack.push(automats->at(j));
+		else if (isNotSpecialSymbol(reg[i])) 
+		{
+			Automat* newAutomat = AddAutomat();
+			*newAutomat = Automat(*automats[j]);
+			automat_stack.push(newAutomat);
 			j++;
 		}
 		else if (reg[i] == ')')
 		{
 			while (!operations.empty() && operations.top() != '(')
 			{
-				char op = operations.top();
-				operations.pop();
-				if (op == '*') {                 // if iteration 
-					Automat a1 = automat_stack.top();
-					automat_stack.pop();
-					automat_stack.push(Iteration(&a1));
-				}
-				else {
-					Automat a2 = automat_stack.top();
-					automat_stack.pop();
-
-					Automat a1 = automat_stack.top();
-					automat_stack.pop();
-
-					automat_stack.push(applyOp(a1, a2, op));
-				}
+				AppplyFunction(automat_stack, operations);
 			}
 			operations.pop();
 		}
 		else // if a special symbol: +, ., *, & 
 		{
 			while (!operations.empty() && precedence(operations.top()) >= precedence(reg[i])) {
-				char op = operations.top();
-				operations.pop();
-				if (op == '*') {
-					Automat a1 = automat_stack.top();
-					automat_stack.pop();
-					automat_stack.push(Iteration(&a1));
-				}
-				else {
-					Automat a2 = automat_stack.top();
-					automat_stack.pop();
-
-					Automat a1 = automat_stack.top();
-					automat_stack.pop();
-
-					automat_stack.push(applyOp(a1, a2, op));
-				}
+				AppplyFunction(automat_stack, operations);
 			}
 			operations.push(reg[i]);
 		}
 	}
 
-	while (!operations.empty()) {
-		char op = operations.top();
-		operations.pop();
-		if (op == '*') {
-			Automat a1 = automat_stack.top();
-			automat_stack.pop();
-			automat_stack.push(Iteration(&a1));
-		}
-		else {
-			Automat a2 = automat_stack.top();
-			automat_stack.pop();
-
-			Automat a1 = automat_stack.top();
-			automat_stack.pop();
-
-			automat_stack.push(applyOp(a1, a2, op));
-		}
+	while (!operations.empty()) 
+	{
+		AppplyFunction(automat_stack, operations);
 	}
 
-	AddAutomat(&automat_stack.top());
 	return &m_automats.back();
-	//continue
 }
 
 //stoqns code
