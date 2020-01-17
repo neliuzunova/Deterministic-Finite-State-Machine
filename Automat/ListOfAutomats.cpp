@@ -19,41 +19,52 @@ Automat* ListOfAutomats::AddAutomat()
 	return &m_automats.back();
 }
 
+Automat* ListOfAutomats::AddAutomat(char letter)
+{
+	Automat* a = AddAutomat();
+	//to prevent vector from resizing and invalidating the states
+
+	State* s0 = a->AddState();
+	s0->SetIsStarting(true);
+	s0->SetIsFinal(false);
+	a->SetStartingState(s0);
+	State* s1 = a->AddState();
+	s1->SetIsStarting(false);
+	s1->SetIsFinal(true);
+
+	Edge* e1 = a->AddEdge();
+	e1->SetLetter(letter);
+	e1->SetToState(s1);
+	s0->AddEdge(e1);
+	return a;
+}
+
 Automat ListOfAutomats::Union(Automat* a1, Automat* a2)
 {
 	Automat a3;
 	State* s0 = a3.AddState();
 	s0->SetIsStarting(true);
 	s0->SetIsFinal(false);
-	
-	/*
-	Edge* e1 = a3.AddEdge();
-	Edge* e2 = a3.AddEdge();
-	e1->SetLetter('\0');
-	e2->SetLetter('\0');
-	e1->SetToState(a1->GetStartingState());
-	a1->GetStartingState()->SetIsStarting(false);
-	e2->SetToState(a2->GetStartingState());
-	a2->GetStartingState()->SetIsStarting(false);
 
-	s0->AddEdge(e1);
-	s0->AddEdge(e2);
-	*/
-	//a1->GetStartingState()->SetIsStarting(false);
-	//a2->GetStartingState()->SetIsStarting(false);
 	for (auto edge: a1->GetEdges())
 	{
-		Edge* e1 = a3.AddEdge();
-		e1->SetLetter(edge.GetLetter());
-		e1->SetToState(edge.GetToState());
-		s0->AddEdge(e1);
+		if (edge.GetFromState() == a1->GetStartingState())
+		{
+			Edge* e1 = a3.AddEdge();
+			e1->SetLetter(edge.GetLetter());
+			e1->SetToState(edge.GetToState());
+			s0->AddEdge(e1);
+		}
 	}
 	for (auto edge : a2->GetEdges())
 	{
-		Edge* e1 = a3.AddEdge();
-		e1->SetLetter(edge.GetLetter());
-		e1->SetToState(edge.GetToState());
-		s0->AddEdge(e1);
+		if (edge.GetFromState() == a2->GetStartingState())
+		{
+			Edge* e1 = a3.AddEdge();
+			e1->SetLetter(edge.GetLetter());
+			e1->SetToState(edge.GetToState());
+			s0->AddEdge(e1);
+		}
 	}
 
 	a3.SetStartingState(s0);
@@ -81,11 +92,14 @@ Automat ListOfAutomats::Iteration(Automat * a1)
 				Edge* e1 = a3.AddEdge();
 				e1->SetLetter(newEdge->GetLetter());
 				e1->SetToState(newEdge->GetToState());
-				state.AddEdge(e1);//
+				state.AddEdge(e1);
 			}
 		}
+		if (state.GetIsStarting())
+		{
+			state.SetIsFinal(true);
+		}
 	}
-
 	return a3;
 }
 
@@ -110,6 +124,13 @@ Automat ListOfAutomats::Addititon(Automat * a1)
 	return a3;
 }
 
+Automat ListOfAutomats::Section(Automat * a1, Automat * a2)
+{
+	Automat a4 = Addititon(a1);
+	Automat a5 = Addititon(a2);
+	return Union(&a4, &a5);
+}
+
 Automat ListOfAutomats::Concatenation(Automat * a1, Automat * a2)
 {
 	Automat a3;
@@ -123,15 +144,13 @@ Automat ListOfAutomats::Concatenation(Automat * a1, Automat * a2)
 	{
 		if (state.GetIsFinal())
 		{
-			state.SetIsFinal(false); //
+			state.SetIsFinal(false); 
 			for (auto& newEdge : *(a2->GetStartingState())->GetEdges())
 			{
 				Edge* e1 = a3.AddEdge();
 				e1->SetLetter(newEdge->GetLetter());
 				e1->SetToState(newEdge->GetToState());
-				state.AddEdge(e1);//
-				//e1->SetFromState(&state);
-				//std::cout<<e1->GetFromState()->GetID();
+				state.AddEdge(e1);
 			}
 		}	
 	}
@@ -149,7 +168,7 @@ int precedence(char operation) {
 	case '.': return 2;
 	case '*': return 3;
 	//case '(': return 4;
-	//case ')': return 1;
+	//case ')': return 4;
 	default:
 		return 0;
 	}
@@ -159,6 +178,7 @@ Automat ListOfAutomats::applyOp(Automat& a1,Automat& a2, char op) {
 	switch (op) {
 	case '+': return Union(&a1, &a2);
 	case '.': return Concatenation(&a1, &a2);
+	case '&': return Section(&a1, &a2);
 	}
 }
 
@@ -172,10 +192,9 @@ void ListOfAutomats::AppplyFunction( std::stack<Automat*>& automat_stack, std::s
 	operations.pop();
 	if (op == '*')
 	{
-		Automat a1 = Iteration(automat_stack.top());
-		automat_stack.pop();
 		Automat* newAutomat = AddAutomat();
-		*newAutomat = a1;
+		*newAutomat = Iteration(automat_stack.top());
+		automat_stack.pop();
 	}
 	else
 	{
@@ -208,8 +227,7 @@ Automat* ListOfAutomats::RegToAutomat(const std::string& reg)
 		}
 		if (isNotSpecialSymbol(reg[i])) 
 		{
-			Automat* newAutomat = AddAutomat();
-			*newAutomat = Automat(reg[i]);
+			Automat* newAutomat = AddAutomat(reg[i]);
 			automats.push_back(newAutomat);
 		}
 	}
@@ -259,118 +277,3 @@ Automat* ListOfAutomats::RegToAutomat(const std::string& reg)
 
 	return &m_automats.back();
 }
-
-//stoqns code
-/*
-int precedence(char op) {
-	if (op == 'U')
-		return 1;
-	if (op == '.')
-		return 2;
-	if (op == '+')
-		return 3;
-	return 0;
-}
-
-Automat applyUn(const Automat& a1, char op) {
-	switch (op) {
-	case '+': return Un(a1);
-	}
-}
-
-Automat applyOp(const Automat& a1, const Automat& a2, char op) {
-	switch (op) {
-	case 'U': return Union(a1, a2);
-	case '.': return Concat(a1, a2);
-	}
-}
-
-Automat Reg_to_automat(const string& reg) {
-	vector<Automat> automats;
-	for (unsigned int i = 0; i < reg.size(); i++) {
-		if (islower(reg[i]) || isdigit(reg[i])) {
-			Automat automat(reg[i]);
-			automats.push_back(automat);
-		}
-	}
-	stack <Automat> automat_stack;
-	stack <char> ops;
-	int j = 0;
-	for (unsigned int i = 0; i < reg.size(); i++) {
-		if (reg[i] == ' ') continue;
-		else if (reg[i] == '(') {
-			ops.push(reg[i]);
-		}
-		else if (islower(reg[i]) || isdigit(reg[i])) {
-			automat_stack.push(automats[j]);
-			j++;
-		}
-		else if (reg[i] == ')')
-		{
-			while (!ops.empty() && ops.top() != '(')
-			{
-				char op = ops.top();
-				ops.pop();
-				if (op == '+') {
-					Automat a1 = automat_stack.top();
-					automat_stack.pop();
-					automat_stack.push(applyUn(a1, op));
-				}
-				else {
-					Automat a2 = automat_stack.top();
-					automat_stack.pop();
-
-					Automat a1 = automat_stack.top();
-					automat_stack.pop();
-
-					automat_stack.push(applyOp(a1, a2, op));
-				}
-			}
-			ops.pop();
-		}
-		else
-		{
-			while (!ops.empty() && precedence(ops.top()) >= precedence(reg[i])) {
-				char op = ops.top();
-				ops.pop();
-				if (op == '+') {
-					Automat a1 = automat_stack.top();
-					automat_stack.pop();
-					automat_stack.push(applyUn(a1, op));
-				}
-				else {
-					Automat a2 = automat_stack.top();
-					automat_stack.pop();
-
-					Automat a1 = automat_stack.top();
-					automat_stack.pop();
-
-					automat_stack.push(applyOp(a1, a2, op));
-				}
-			}
-			ops.push(reg[i]);
-		}
-	}
-	while (!ops.empty()) {
-		char op = ops.top();
-		ops.pop();
-		if (op == '+') {
-			Automat a1 = automat_stack.top();
-			automat_stack.pop();
-			automat_stack.push(applyUn(a1, op));
-		}
-		else {
-			Automat a2 = automat_stack.top();
-			automat_stack.pop();
-
-			Automat a1 = automat_stack.top();
-			automat_stack.pop();
-
-			automat_stack.push(applyOp(a1, a2, op));
-		}
-	}
-
-
-	return automat_stack.top();
-}
-*/

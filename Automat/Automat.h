@@ -10,7 +10,6 @@ private:
 	
 public:
 	Automat();
-	Automat(char letter);
 	State* GetStartingState() const;
 	std::vector<State> GetStates() const;
 	std::vector<State>& GetStatesRef();

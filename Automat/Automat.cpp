@@ -10,26 +10,6 @@ Automat::Automat()
 	m_edges.reserve(1024);
 }
 
-Automat::Automat(char letter)
-{
-	//to prevent vector from resizing and invalidating the states
-	m_states.reserve(1024);
-	m_edges.reserve(1024);
-
-	State* s0 = AddState();
-	s0->SetIsStarting(true);
-	s0->SetIsFinal(false);
-	SetStartingState(s0);
-	State* s1 = AddState();
-	s1->SetIsStarting(false);
-	s1->SetIsFinal(true);
-
-	Edge* e1 = AddEdge();
-	e1->SetLetter(letter);
-	e1->SetToState(s1);
-	s0->AddEdge(e1);
-}
-
 State* Automat::GetStartingState() const
 {
 	return m_startingState;
@@ -52,6 +32,7 @@ std::vector<Edge> Automat::GetEdges() const
 
 State* Automat::AddState()
 {
+	m_states.reserve(1024);
 	State state;
 	state.SetID(counter++);
 	m_states.push_back(state);
@@ -65,6 +46,7 @@ void Automat::AddStates(std::vector<State> states)
 
 Edge* Automat::AddEdge()
 {
+	m_edges.reserve(1024);
 	Edge edge;
 	m_edges.push_back(edge);
 	return &m_edges.back();
@@ -101,20 +83,18 @@ bool Automat::HasWord(std::string word)
 	{
 		for (int j = 0; j < NumberOfTransitions; j++)
 		{
+			if (current.GetIsFinal() && counter == word.length())
+				return true;
 			if (word[counter] == GetEdges()[j].GetLetter() && current == *GetEdges()[j].GetFromState())
 			{
 				current = *GetEdges()[j].GetToState();
 				counter++;
 				j = 0;
 			}
-			if (current.GetIsFinal() && counter == word.length())
-				return true;
 			if (j + 1 == NumberOfTransitions)
 				return false;
 		}
 	}
-
-	
 
 	return false;
 }

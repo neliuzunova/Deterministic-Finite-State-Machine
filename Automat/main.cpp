@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include "State.h"
 #include "Automat.h"
 #include "ListOfAutomats.h"
@@ -6,6 +8,7 @@
 static int counter = 0;
 
 int main() {
+	/*
 	Automat A;
 	State* s0 = A.AddState();
 	s0->SetIsStarting(true);
@@ -66,7 +69,14 @@ int main() {
 	Automat A4 = LA.Concatenation(&A, &A2);
 	A4.PrintAutomat();
 
-	Automat A5 = LA.Iteration(&A);
+	std::cout << (A4 << "a" ) << std::endl;
+	std::cout << (A4 << "b")  << std::endl;
+	std::cout << (A4 << "àc")  << std::endl;
+	std::cout << (A4 << "bc")  << std::endl;
+	std::cout << (A4 << "àcb") << std::endl;
+	std::cout << (A4 << "c") << std::endl;
+	
+	Automat A5 = LA.Iteration(&A2);
 	A5.PrintAutomat();
 
 	Automat A6 = LA.Addititon(&A4);
@@ -75,10 +85,46 @@ int main() {
 	std::cout << A2.IsEmpty() << std::endl;
 		//<< A4.HasWord("ac") << std::endl << A4.HasWord("cc");
 
-	Automat('f').PrintAutomat();
-	std::cout << std::endl;
-	Automat* A7 = LA.RegToAutomat("(a + b)");
-	A7->PrintAutomat();
+	LA.AddAutomat('f')->PrintAutomat();
+
+	Automat A7 = LA.Section(&A, &A2);
+	A7.PrintAutomat();
+
+	Automat* A8 = LA.RegToAutomat("a*");
+	A8->PrintAutomat();
+
+	Automat* A9 = LA.RegToAutomat("((a.b + b.a) & a.b)"); //not ready
+	A9->PrintAutomat();
+
+	Automat* A10 = LA.RegToAutomat("a.b.c + b.c.a");
+	A10->PrintAutomat();
+
+	std::cout << (*A10 << "abc") << std::endl;
+	*/
+	
+	std::cout << "Input file name and a regular expression: \n";
+
+	std::string filename, regExpr;
+	std::cin >> filename >> regExpr;
+
+	ListOfAutomats LA;
+	Automat* A11 = LA.RegToAutomat(regExpr); //not good
+	A11->PrintAutomat();
+
+	std::ifstream f(filename + ".txt");
+	int automatCount;
+	f >> automatCount;
+	for (int i = 0; i < automatCount; i++)
+	{
+		std::string row;
+		f >> row;
+		if (*A11 << row)
+		{
+			std::cout << row << std::endl;
+		}
+	}
+	f.close();
+	//example: (a+b)*
 
 	system("pause");
 	return 0;

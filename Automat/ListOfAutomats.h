@@ -13,12 +13,14 @@ public:
 	ListOfAutomats();
 	void AddAutomat(Automat* automat);
 	Automat* AddAutomat();
+	Automat* AddAutomat(char letter);
 
 	//Functions
 	Automat Union(Automat* a1, Automat* a2);
 	Automat Concatenation(Automat* a1, Automat* a2);
 	Automat Iteration(Automat* a1);
 	Automat Addititon(Automat* a1); 
+	Automat Section(Automat* a1, Automat* a2); //to do minimization
 	Automat* RegToAutomat(const std::string& reg);
 };
 
