@@ -27,7 +27,7 @@
     <ClCompile Include="Automat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ListOfAutomats.cpp">
+    <ClCompile Include="AutomatOperations.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -41,7 +41,7 @@
     <ClInclude Include="Automat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ListOfAutomats.h">
+    <ClInclude Include="AutomatOperations.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

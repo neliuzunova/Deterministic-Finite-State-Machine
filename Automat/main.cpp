@@ -3,7 +3,7 @@
 #include <string>
 #include "State.h"
 #include "Automat.h"
-#include "ListOfAutomats.h"
+#include "AutomatOperations.h"
 
 static int counter = 0;
 
@@ -58,7 +58,7 @@ int main() {
 	A.PrintAutomat();
 	A2.PrintAutomat();
 
-	ListOfAutomats LA;
+	AutomatOperations LA;
 	Automat A3 = LA.Union(&A, &A2);
 	A3.PrintAutomat();
 
@@ -81,7 +81,7 @@ int main() {
 
 	Automat A6 = LA.Addititon(&A4);
 	A6.PrintAutomat();
-
+	
 	std::cout << A2.IsEmpty() << std::endl;
 		//<< A4.HasWord("ac") << std::endl << A4.HasWord("cc");
 
@@ -101,15 +101,16 @@ int main() {
 
 	std::cout << (*A10 << "abc") << std::endl;
 	*/
-	
+
 	std::cout << "Input file name and a regular expression: \n";
-
 	std::string filename, regExpr;
-	std::cin >> filename >> regExpr;
 
-	ListOfAutomats LA;
-	Automat* A11 = LA.RegToAutomat(regExpr); //not good
-	A11->PrintAutomat();
+	std::getline(std::cin, filename);
+	std::getline(std::cin, regExpr);
+
+	AutomatOperations LA;
+	Automat* A = LA.RegToAutomat(regExpr); 
+	//A->PrintAutomat();
 
 	std::ifstream f(filename + ".txt");
 	int automatCount;
@@ -118,13 +119,14 @@ int main() {
 	{
 		std::string row;
 		f >> row;
-		if (*A11 << row)
+		if (A->HasWord(row))
 		{
 			std::cout << row << std::endl;
 		}
 	}
 	f.close();
-	//example: (a+b)*
+	//example: (a+b)*  , (a . b)*+(b . c);
+	//example: (a + b + c)*  , (a.b.c)*  , (c)*  , a.b+c ;
 
 	system("pause");
 	return 0;

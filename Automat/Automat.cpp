@@ -55,6 +55,21 @@ Edge* Automat::AddEdge()
 void Automat::AddEdges(std::vector<Edge> edges)
 {
 	m_edges.insert(m_edges.end(), edges.begin(), edges.end());
+
+	for (auto& edge : m_edges)
+	{
+		for (auto& state : m_states)
+		{
+			if (edge.GetFromState()->GetID() == state.GetID())
+			{
+				edge.SetFromState(&state);
+			}
+			if (edge.GetToState()->GetID() == state.GetID())
+			{
+				edge.SetToState(&state);
+			}
+		}
+	}
 }
 
 void Automat::SetStartingState(State* state)
@@ -83,16 +98,20 @@ bool Automat::HasWord(std::string word)
 	{
 		for (int j = 0; j < NumberOfTransitions; j++)
 		{
-			if (current.GetIsFinal() && counter == word.length())
-				return true;
 			if (word[counter] == GetEdges()[j].GetLetter() && current == *GetEdges()[j].GetFromState())
 			{
 				current = *GetEdges()[j].GetToState();
 				counter++;
 				j = 0;
 			}
+			if (current.GetIsFinal() && counter == word.length())
+			{
+				return true;
+			}
 			if (j + 1 == NumberOfTransitions)
+			{
 				return false;
+			}	
 		}
 	}
 
@@ -136,11 +155,11 @@ bool Automat::IsEmpty() {
 	for (auto state : GetStates())
 	{
 		if (state.GetIsFinal())
+		{
 			result = false;
+		}
 	}
-	if (GetStates().size() == 0 || GetEdges().size() == 0 || result == true)
-		return true;
-	return false;
+	return (GetStates().size() == 0 || GetEdges().size() == 0 || result == true);
 }
 
 
